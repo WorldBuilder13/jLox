@@ -2,6 +2,7 @@
     This code is copied from the book Crating Intepreter by Robert Nystrom
 
     Changes to the base code I've made: (changes will be kept on branches of main)
+    + added support for multi-line comments, Chapter 4 Challenge 4
     +TBD
 */
 
@@ -10,6 +11,7 @@ package com.craftinginterpreters.lox;
 
 
 import static com.craftinginterpreters.lox.TokenType.*;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,7 +51,7 @@ public class Scanner {
     }
 
     //creates Tokens and adds them to tokens list
-    List<Token> scanTokens(){
+    List<Token> scanTokens() throws IOException{
         while (!isAtEnd()){
             // we are at the beginnign of the next lexeme < Book comment
             start = current;
@@ -61,7 +63,7 @@ public class Scanner {
     }
 
     //reades lexeme and compares to toekn
-    private void scanToken(){
+    private void scanToken() throws IOException{
         char c = advance();
         switch(c){ //book uses standard switch, rule switch might make it cleaner
             //single character tokens
@@ -91,6 +93,18 @@ public class Scanner {
                 if(match('/')){
                     // A comment goes until the end of the line. < Book Comment
                     while(peek() != '\n'&& !isAtEnd()) advance();
+                }
+                else if(match('*')){ //this case for multi-line comments is my solution to book's chapter 4 challenge 4
+                    //removes "/*" and the everythign before closing "*/"
+                    while(peek() != '*' && peekNext() != '/' && !isAtEnd()) {
+                        advance();
+                    }
+                    //check if unclosed multi-line
+                    if(peek() != '*' || peekNext() != '/') throw new IOException("multi-line comment not terminated");
+                    else{
+                        advance(); //consume *
+                        advance(); //consume /
+                    }
                 }
                 else{
                     addToken(SLASH);
@@ -156,7 +170,7 @@ public class Scanner {
         if(isAtEnd()) return false; // no other character
         if(source.charAt(current) != expected) return false; //character doesn't expand on
 
-        current++;
+        current++; //only moves current if matches and not at end of file
         return true;
     }
 
