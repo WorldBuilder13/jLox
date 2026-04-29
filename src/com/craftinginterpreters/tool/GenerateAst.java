@@ -38,6 +38,8 @@ public class GenerateAst {
         writer.println();
         writer.println("abstract class " + baseName + " {");
 
+        defineVisitor(writer, baseName, types); // calls visitor to handle methods for classes
+
         // The AST classes < Book Comment
         for (String type: types){
             String className = type.split(":")[0].trim();
@@ -45,8 +47,22 @@ public class GenerateAst {
             defineType(writer, baseName, className, fields);
         }
 
+        writer.println("abstract <R> R Accept(Visitor<R> visitor);");
         writer.println("}");
         writer.close();
+    }
+
+    private static void defineVisitor(
+        PrintWriter writer, String baseName, List<String> types
+    ){
+        writer.println(" interface Visitor<R> {");
+
+        for (String type: types){
+            String typeName = type.split(":")[0].trim();
+            writer.println(" R visit" + typeName + baseName + "(" + typeName + " " + baseName.toLowerCase() + ");");
+        }
+
+        writer.println(" }");
     }
 
     private static void defineType(
@@ -65,6 +81,13 @@ public class GenerateAst {
         }
 
         writer.println(" }");
+
+        //Vistor pattern < Book Comment
+        writer.println();
+        writer.println(" @Override");
+        writer.println(" <R> R accept(Vistor<R> visitor){");
+        writer.println(" return visitor.visit" + className + baseName + "(this);");
+        writer.println("}");
 
         //fields < Book Comment
         writer.println();
