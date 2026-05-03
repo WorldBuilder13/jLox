@@ -17,7 +17,7 @@ abstract class Expr {
  }
 
  @Override
- <R> R accept(Vistor<R> visitor){
+ <R> R accept(Visitor<R> visitor){
  return visitor.visitBinaryExpr(this);
 }
 
@@ -31,7 +31,7 @@ abstract class Expr {
  }
 
  @Override
- <R> R accept(Vistor<R> visitor){
+ <R> R accept(Visitor<R> visitor){
  return visitor.visitGroupingExpr(this);
 }
 
@@ -43,7 +43,7 @@ abstract class Expr {
  }
 
  @Override
- <R> R accept(Vistor<R> visitor){
+ <R> R accept(Visitor<R> visitor){
  return visitor.visitLiteralExpr(this);
 }
 
@@ -56,12 +56,13 @@ abstract class Expr {
  }
 
  @Override
- <R> R accept(Vistor<R> visitor){
+ <R> R accept(Visitor<R> visitor){
  return visitor.visitUnaryExpr(this);
 }
 
  final Token operator;
  final Expr right;
 }
-abstract <R> R Accept(Visitor<R> visitor);
+
+abstract <R> R accept(Visitor<R> visitor);
 }
