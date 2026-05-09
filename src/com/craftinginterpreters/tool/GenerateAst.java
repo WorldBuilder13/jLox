@@ -3,6 +3,8 @@
 
     Changes to the base code I've made: (changes will be kept on branches of main)
     +TBD
+
+    This tool generates the classes for Expr, Visitor and their derived classes.
 */
 
 package com.craftinginterpreters.tool;
@@ -28,6 +30,8 @@ public class GenerateAst {
         ));
     }
 
+    // opens writer and prints head of file. 
+    // calls defineVisitor to print methods and finer details
     private static void defineAst(String outputDir, String baseName, List<String> types) throws IOException{
         String path = outputDir + "/" + baseName + ".java";
         PrintWriter writer = new PrintWriter(path, "UTF-8");
@@ -55,6 +59,7 @@ public class GenerateAst {
         writer.close();
     }
 
+    // prints visitor class interface then derived classes for each type
     private static void defineVisitor(
         PrintWriter writer, String baseName, List<String> types
     ){
@@ -68,6 +73,7 @@ public class GenerateAst {
         writer.println(" }");
     }
 
+    // prints prints class for each type
     private static void defineType(
         PrintWriter writer, String baseName, String className, String fieldList
     ){
