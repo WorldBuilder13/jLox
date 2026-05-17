@@ -16,7 +16,9 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class Lox {
+    private static final Interpreter interpreter = new Interpreter(); //static so global variables will carry through REPL session
     static boolean hadError = false;
+    static boolean hadRuntimeError = false;
 
     public static void main(String[] args) throws IOException {
         if(args.length > 1){
@@ -36,6 +38,7 @@ public class Lox {
         run(new String(bytes, Charset.defaultCharset()));
         //Indicate an error in the exit code. < Book comment
         if(hadError) System.exit(65);
+        if(hadRuntimeError) System.exit(70);
     }
 
     //reads a line from the user (file address) and then calls run on it
@@ -62,7 +65,7 @@ public class Lox {
         //Stop if there ws a syntax error.
         if(hadError) return;
 
-        System.out.println(new AstPrinter().print(expression));
+        interpreter.interpret(expression);
     }
 
     static void error(int line, String message){ // TODO: add public access modifier? not presetn in book
@@ -81,6 +84,11 @@ public class Lox {
         } else {
             report(token.line, " at '" + token.lexeme + "'", message);
         }
+    }
+
+    static void runtimeError(RuntimeError error){
+        System.err.println(error.getMessage() + "\n[line " + error.token.line + "]");
+        hadRuntimeError = true;
     }
 
 

@@ -1,6 +1,10 @@
-package com.craftinginterpreters.lox;
+/*
+    This code is copied from the book Crating Intepreter by Robert Nystrom
 
-import java.util.List;
+    Changes to the base code I've made: (changes will be kept on branches of main)
+    +TBD
+*/
+package com.craftinginterpreters.lox;
 
 abstract class Expr {
  interface Visitor<R> {
