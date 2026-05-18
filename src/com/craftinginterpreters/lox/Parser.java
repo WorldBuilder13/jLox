@@ -25,6 +25,10 @@ class Parser {
 
     /*
     Grammar - recursive descent, parses top down with operation precedence being bottom-up
+    program     ->  statement*EOF;
+    statement   ->  exprStmt | printStmt;
+    exprStmt    ->  expression ";";
+    printStmt   ->  "print" expression ";";
     expression  ->  equality;
     equality    ->  comparison (("!="|"==")comaprison)*;
     comparison  ->  term ((">" | ">=" | "<" | "<=") term)*;
