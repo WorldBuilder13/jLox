@@ -14,10 +14,11 @@
 package com.craftinginterpreters.lox;
 
 import static com.craftinginterpreters.lox.TokenType.*;
+import java.util.ArrayList;
 import java.util.List;
 
 
-//uses "panic mode" to handle parsing after encountering an error
+//handles errors with a "panic mode"
 class Parser {
     private static class ParseError extends RuntimeException{}
     private final List<Token> tokens;
@@ -42,12 +43,13 @@ class Parser {
         this.tokens = tokens;
     }
 
-    Expr parse(){
-        try {
-            return expression();
-        } catch (ParseError error) {
-            return null;
+    List<Stmt> parse(){
+        List<Stmt> statements = new ArrayList<>();
+        while(!isAtEnd()){
+            statements.add(statement());
         }
+
+        return statements;
     }
 
     //methods for each production of grammar
@@ -68,6 +70,24 @@ class Parser {
         }
 
         return expr;
+    }
+
+    private Stmt statement(){
+        if(match(PRINT)) return printStatement();
+
+        return expressionStatement();
+    }
+
+    private Stmt printStatement(){
+        Expr value = expression();
+        consume(SEMICOLON, "Expect ';' after value.");
+        return new Stmt.Print(value);
+    }
+
+    private Stmt expressionStatement(){
+        Expr expr = expression();
+        consume(SEMICOLON, "Expect ';' after expression.");
+        return new Stmt.Expression(expr);
     }
 
     // comparison  ->  term ((">" | ">=" | "<" | "<=") term)*;
