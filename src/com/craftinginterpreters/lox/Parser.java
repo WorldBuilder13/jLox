@@ -26,17 +26,20 @@ class Parser {
 
     /*
     Grammar - recursive descent, parses top down with operation precedence being bottom-up
-    program     ->  statement*EOF;
+    program     ->  declaration*EOF;
+    declaration ->  varDecl | statement;
+    varDecl     ->  "var" IDENTIFIER ("=" expression)?";";
     statement   ->  exprStmt | printStmt;
     exprStmt    ->  expression ";";
     printStmt   ->  "print" expression ";";
-    expression  ->  equality;
+    expression  ->  equality | assignment;
+    assignment  ->  IDENTIFIER "=" assignment | equality ;
     equality    ->  comparison (("!="|"==")comaprison)*;
     comparison  ->  term ((">" | ">=" | "<" | "<=") term)*;
     term        ->  factor (("-" | "+")factor)*;
     factor      ->  unary (("/" | "*") unary)*;
     unary       ->  ("!"|"-") unary | primary;
-    primary     ->  NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")";
+    primary     ->  NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER;
     */
 
     Parser(List<Token> tokens){
@@ -46,7 +49,7 @@ class Parser {
     List<Stmt> parse(){
         List<Stmt> statements = new ArrayList<>();
         while(!isAtEnd()){
-            statements.add(statement());
+            statements.add(declaration());
         }
 
         return statements;
@@ -55,7 +58,19 @@ class Parser {
     //methods for each production of grammar
     //expression  ->  equality;
     private Expr expression(){
-        return equality();
+        return assignment();
+    }
+
+    //declaration ->  varDecl | statement;
+    private Stmt declaration(){
+        try {
+            if(match(VAR)) return varDeclaration();
+
+            return statement();
+        } catch (ParseError error) {
+            synchronize();
+            return null;
+        }
     }
 
     //equality    ->  comparison (("!="|"==")comaprison)*;
@@ -84,10 +99,40 @@ class Parser {
         return new Stmt.Print(value);
     }
 
+    private Stmt varDeclaration(){
+        Token name = consume(IDENTIFIER, "Expect variabl3e name.");
+        Expr initializer = null;
+
+        if(match(EQUAL)){
+            initializer = expression();
+        }
+
+        consume(SEMICOLON, "expect ';' after variable declaration.");
+        return new Stmt.Var(name, initializer);
+    }
+
     private Stmt expressionStatement(){
         Expr expr = expression();
         consume(SEMICOLON, "Expect ';' after expression.");
         return new Stmt.Expression(expr);
+    }
+
+    // assignment  ->  IDENTIFIER "=" assignment | equality ;
+    private Expr assignment(){
+        Expr expr = equality();
+
+        if(match(EQUAL)){
+            Token equals = previous();
+            Expr value = assignment();
+            if(expr instanceof Expr.Variable){
+                Token name = ((Expr.Variable)expr).name;
+                return new Expr.Assign(name, value);
+            }
+
+            error(equals, "Invalid assignment target.");
+        }
+
+        return expr;
     }
 
     // comparison  ->  term ((">" | ">=" | "<" | "<=") term)*;
@@ -143,7 +188,7 @@ class Parser {
         return primary();
     }
 
-    // primary     ->  NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")";
+    //  primary ->  NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER;
     private Expr primary(){
         //returns for each terminal
         if(match(FALSE)) return new Expr.Literal(false);
@@ -153,6 +198,10 @@ class Parser {
         //returns number or string literals
         if(match(NUMBER, STRING)){
             return new Expr.Literal(previous().literal);
+        }
+
+        if(match(IDENTIFIER)){
+            return new Expr.Variable(previous());
         }
 
         if(match(LEFT_PAREN)){
