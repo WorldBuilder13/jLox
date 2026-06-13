@@ -34,8 +34,10 @@ class Parser {
     ifStmt      -> "if" "(" expression ")" statement ("else" statement)?;
     printStmt   ->  "print" expression ";";
     block       ->  "{" declaration* "}";
-    expression  ->  equality | assignment;
-    assignment  ->  IDENTIFIER "=" assignment | equality ;
+    expression  ->  assignment;
+    assignment  ->  IDENTIFIER "=" assignment | equality | logic_or;
+    logic_or    ->  logic_and("or" logic_and)*;
+    logic_and   ->  equality("and" equality)*;
     equality    ->  comparison (("!="|"==")comaprison)*;
     comparison  ->  term ((">" | ">=" | "<" | "<=") term)*;
     term        ->  factor (("-" | "+")factor)*;
@@ -146,9 +148,9 @@ class Parser {
         return statements;
     }
 
-    // assignment  ->  IDENTIFIER "=" assignment | equality ;
+    // assignment  ->  IDENTIFIER "=" assignment | equality | logic_or;
     private Expr assignment(){
-        Expr expr = equality();
+        Expr expr = or();
 
         if(match(EQUAL)){
             Token equals = previous();
@@ -159,6 +161,30 @@ class Parser {
             }
 
             error(equals, "Invalid assignment target.");
+        }
+
+        return expr;
+    }
+
+    private Expr or(){
+        Expr expr = and();
+
+        while(match(OR)){
+            Token operator = previous();
+            Expr right = and();
+            expr = new Expr.Logical(expr, operator, right);
+        }
+
+        return expr;
+    }
+
+    private Expr and(){
+        Expr expr = equality ();
+
+        while(match(AND)){
+            Token operator = previous();
+            Expr right = equality();
+            expr = new Expr.Logical(expr, operator, right);
         }
 
         return expr;
