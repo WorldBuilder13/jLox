@@ -29,8 +29,9 @@ class Parser {
     program     ->  declaration*EOF;
     declaration ->  varDecl | statement;
     varDecl     ->  "var" IDENTIFIER ("=" expression)?";";
-    statement   ->  exprStmt | ifStmt | printStmt | whileStmt | block;
+    statement   ->  exprStmt | forStmt | ifStmt | printStmt | whileStmt | block;
     exprStmt    ->  expression ";";
+    forStmt     -> "for" "(" (varDecl | exprStmt | ;) expression? ";" expression? ")" statement;
     ifStmt      -> "if" "(" expression ")" statement ("else" statement)?;
     printStmt   ->  "print" expression ";";
     whileStmt   ->  "while" "(" expression ")" statement;
@@ -61,7 +62,7 @@ class Parser {
     }
 
     //methods for each production of grammar
-    //expression  ->  equality;
+    // expression  ->  assignment;
     private Expr expression(){
         return assignment();
     }
@@ -92,6 +93,7 @@ class Parser {
         return expr;
     }
 
+    // statement   ->  exprStmt | forStmt | ifStmt | printStmt | whileStmt | block;
     private Stmt statement(){
         if(match(IF)) return ifStatement();
         if(match(PRINT)) return printStatement();
@@ -101,6 +103,7 @@ class Parser {
         return expressionStatement();
     }
 
+    //ifStmt      -> "if" "(" expression ")" statement ("else" statement)?;
     private Stmt ifStatement(){
         consume(LEFT_PAREN, "Expect '(' after 'if'.");
         Expr condition = expression();
@@ -115,12 +118,14 @@ class Parser {
         return new Stmt.If(condition, thenBranch, elseBranch);
     }
 
+    // printStmt   ->  "print" expression ";";
     private Stmt printStatement(){
         Expr value = expression();
         consume(SEMICOLON, "Expect ';' after value.");
         return new Stmt.Print(value);
     }
 
+    // varDecl     ->  "var" IDENTIFIER ("=" expression)?";";
     private Stmt varDeclaration(){
         Token name = consume(IDENTIFIER, "Expect variabl3e name.");
         Expr initializer = null;
@@ -133,6 +138,7 @@ class Parser {
         return new Stmt.Var(name, initializer);
     }
 
+    // whileStmt   ->  "while" "(" expression ")" statement;
     private Stmt whileStatement(){
         consume(LEFT_PAREN, "Expect '(' after 'while'.");
         Expr condition = expression();
@@ -141,6 +147,7 @@ class Parser {
 
         return new Stmt.While(condition, body);
     }
+
 
     private Stmt expressionStatement(){
         Expr expr = expression();
