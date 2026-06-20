@@ -29,10 +29,11 @@ class Parser {
     program     ->  declaration*EOF;
     declaration ->  varDecl | statement;
     varDecl     ->  "var" IDENTIFIER ("=" expression)?";";
-    statement   ->  exprStmt | ifStmt | printStmt | block;
+    statement   ->  exprStmt | ifStmt | printStmt | whileStmt | block;
     exprStmt    ->  expression ";";
     ifStmt      -> "if" "(" expression ")" statement ("else" statement)?;
     printStmt   ->  "print" expression ";";
+    whileStmt   ->  "while" "(" expression ")" statement;
     block       ->  "{" declaration* "}";
     expression  ->  assignment;
     assignment  ->  IDENTIFIER "=" assignment | equality | logic_or;
@@ -94,6 +95,7 @@ class Parser {
     private Stmt statement(){
         if(match(IF)) return ifStatement();
         if(match(PRINT)) return printStatement();
+        if(match(WHILE)) return whileStatement();
         if(match(LEFT_BRACE)) return new Stmt.Block(block()); 
 
         return expressionStatement();
@@ -129,6 +131,15 @@ class Parser {
 
         consume(SEMICOLON, "expect ';' after variable declaration.");
         return new Stmt.Var(name, initializer);
+    }
+
+    private Stmt whileStatement(){
+        consume(LEFT_PAREN, "Expect '(' after 'while'.");
+        Expr condition = expression();
+        consume(RIGHT_PAREN, "Expect ')' after condition.");
+        Stmt body = statement();
+
+        return new Stmt.While(condition, body);
     }
 
     private Stmt expressionStatement(){
