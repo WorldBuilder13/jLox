@@ -15,6 +15,7 @@ package com.craftinginterpreters.lox;
 
 import static com.craftinginterpreters.lox.TokenType.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -95,6 +96,7 @@ class Parser {
 
     // statement   ->  exprStmt | forStmt | ifStmt | printStmt | whileStmt | block;
     private Stmt statement(){
+        if(match(FOR)) return forStatement();
         if(match(IF)) return ifStatement();
         if(match(PRINT)) return printStatement();
         if(match(WHILE)) return whileStatement();
@@ -103,7 +105,63 @@ class Parser {
         return expressionStatement();
     }
 
-    //ifStmt      -> "if" "(" expression ")" statement ("else" statement)?;
+    // forStmt     -> "for" "(" (varDecl | exprStmt | ;) expression? ";" expression? ")" statement;
+    private Stmt forStatement(){
+        consume(LEFT_PAREN, "Expect '(' after 'for'.");
+
+        Stmt initializer;
+
+        // assigns initializer
+        if(match(SEMICOLON)){
+            initializer = null;
+        } else if(match(VAR)){
+            initializer = varDeclaration();
+        } else {
+            initializer = expressionStatement();
+        }
+
+        Expr condition = null;
+        
+        //assigns condition
+        if(!check(SEMICOLON)){
+            condition = expression();
+        }
+        consume(SEMICOLON, "Expect ';' after loop condition.");
+
+        // assigns increment
+        Expr increment = null;
+        if(!check(RIGHT_PAREN)){
+            increment = expression();
+        }
+
+        consume(RIGHT_PAREN, "Expect ')' after for clauses.");
+
+        Stmt body = statement();
+
+        // assigns a new statement block to body where body executes and then the increment
+        if(increment != null){
+            body = new Stmt.Block(
+                Arrays.asList(
+                    body,
+                    new Stmt.Expression(increment)));
+        }
+
+        //assigns a new while statement with condition and body
+        //since increment was appended to the end of body, it will run with every loop of while
+        if(condition == null) condition = new Expr.Literal(true);
+        body = new Stmt.While(condition, body);
+
+        // assigns a new statement block to body where initializer executes and then the body
+        if(initializer != null){
+            body = new Stmt.Block(Arrays.asList(initializer, body));
+        }
+
+        // body structure (initializer, while(condition, (body, increment)))
+        return body;
+    }
+
+
+    // ifStmt      -> "if" "(" expression ")" statement ("else" statement)?;
     private Stmt ifStatement(){
         consume(LEFT_PAREN, "Expect '(' after 'if'.");
         Expr condition = expression();
