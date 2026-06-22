@@ -25,6 +25,7 @@ public class GenerateAst {
         defineAst(outputDir, "Expr", Arrays.asList(
             "Assign : Token name, Expr value",
             "Binary : Expr left, Token operator, Expr right",
+            "Call: Expr callee, Token paren, List<Expr> arguments", // paren tracks closing paren for location in error messages
             "Grouping : Expr expression",
             "Literal : Object value",
             "Logical : Expr left, Token operator, Expr right",

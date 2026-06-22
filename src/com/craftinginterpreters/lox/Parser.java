@@ -45,7 +45,9 @@ class Parser {
     comparison  ->  term ((">" | ">=" | "<" | "<=") term)*;
     term        ->  factor (("-" | "+")factor)*;
     factor      ->  unary (("/" | "*") unary)*;
-    unary       ->  ("!"|"-") unary | primary;
+    unary       ->  ("!"|"-") unary | call;
+    call        ->  primary("("arguments?")")*;
+    arguments   -> expression("," expression)*;
     primary     ->  NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER;
     */
 
@@ -306,7 +308,7 @@ class Parser {
         return expr;
     }
 
-    // unary ->  ("!"|"-") unary | primary;
+    // unary       ->  ("!"|"-") unary | call;
     // first checks if current is ! or -, it recursively calls itself if so
     // if there isn't ! or -, it returns primary
     private Expr unary(){
@@ -316,7 +318,38 @@ class Parser {
             return new Expr.Unary(operator, right);
         }
 
-        return primary();
+        return call();
+    }
+
+    private Expr finishCall(Expr callee){
+        List<Expr> arguments = new ArrayList<>();
+        if(!check(RIGHT_PAREN)){
+            do{
+                if(arguments.size() >= 255){
+                    error(peek(), "Can't have more than 255 arguments");
+                }
+                arguments.add(expression());
+            } while(match(COMMA));
+        }
+
+        Token paren = consume(RIGHT_PAREN, "eXPECT ')' AFTER ARGUMENTS.");
+
+        return new Expr.Call(callee, paren, arguments);
+    }
+
+    // call  ->  primary("("arguments?")")*;
+    private Expr call(){
+        Expr expr = primary();
+
+        while (true){
+            if(match(LEFT_PAREN)){
+                expr = finishCall(expr);
+            } else {
+                break;
+            }
+        }
+
+        return expr;
     }
 
     //  primary ->  NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER;
