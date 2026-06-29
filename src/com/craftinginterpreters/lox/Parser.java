@@ -28,7 +28,10 @@ class Parser {
     /*
     Grammar - recursive descent, parses top down with operation precedence being bottom-up
     program     ->  declaration*EOF;
-    declaration ->  varDecl | statement;
+    declaration ->  funDecl | varDecl | statement;
+    funcDecl    -> "fun" function;
+    function    ->  IDENTIFIER "(" parameters?")"block;
+    parameters  ->  IDENTIFER(","IDENTIFIER)*;
     varDecl     ->  "var" IDENTIFIER ("=" expression)?";";
     statement   ->  exprStmt | forStmt | ifStmt | printStmt | whileStmt | block;
     exprStmt    ->  expression ";";
@@ -70,9 +73,12 @@ class Parser {
         return assignment();
     }
 
-    //declaration ->  varDecl | statement;
+    // declaration ->  funDecl | varDecl | statement;
     private Stmt declaration(){
         try {
+            
+            if(match(FUN)) return function("function");
+
             if(match(VAR)) return varDeclaration();
 
             return statement();
@@ -213,6 +219,31 @@ class Parser {
         Expr expr = expression();
         consume(SEMICOLON, "Expect ';' after expression.");
         return new Stmt.Expression(expr);
+    }
+
+    private Stmt.Function function(string kind){
+        Token name = consume(IDENTIFIER, "expect " + kind + " name.");
+
+        consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
+
+        List<Token> parameters = new ArrayList<>();
+        if(!check(RIGHT_PAREN)){ // check if there are any argumentsw
+            do{
+                if(parameters.size() >= 255){
+                    error(peek(), "Can't have more than 255 parameters.");
+                }
+
+                parameters.add(
+                    consume(IDENTIFIER, "Expect parameter name."));
+            } while(match(COMMA));
+        }
+        
+        consume(RIGHT_PAREN, "Expect '(' after parameters.");
+
+        consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
+
+        List<Stmt> body = block();
+        return new Stmt.Function(name, parameters, body);
     }
 
     private List<Stmt> block(){

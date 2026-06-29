@@ -42,7 +42,7 @@ class Environment {
         throw new RuntimeError(name, "Undefined variable '" + name.lexeme +"'.");
     }
 
-    // it will overrate variable definitions
+    // it will overwrite variable definitions
     // left this way to reduce errors with REPL
     void define(String name, Object value){
         values.put(name, value);
