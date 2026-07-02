@@ -9,7 +9,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>{
 
     Interpreter(){
         //adds the native function clock() for getting time in seconds
-        globals.define("clock", new LoxCallale(){
+        globals.define("clock", new LoxCallable(){
             @Override
             public int arity(){ return 0;}
 
@@ -18,7 +18,8 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>{
                 return (double)System.currentTimeMillis() / 1000.0;
             }
 
-            @Overridepublic String toString(){return "<native fn>";}
+            @Override
+            public String toString(){return "<native fn>";}
 
         });
     }
@@ -158,6 +159,15 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>{
     }
 
     @Override
+    public Void visitFunctionStmt(Stmt.Function stmt){
+        LoxFunction function = new LoxFunction(stmt);
+
+        environment.define(stmt.name.lexeme, function);
+
+        return null;
+    }
+
+    @Override
     public Void visitIfStmt(Stmt.If stmt){
         if(isTruthy(evaluate(stmt.condition))){
             execute(stmt.thenBranch);
@@ -268,7 +278,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void>{
             throw new RuntimeError(expr.paren, "Expected " + function.arity() + " arguments but got " + arguments.size() + ".");
         }
 
-        return fanction.call(this, arguments);
+        return function.call(this, arguments);
     }
 
     

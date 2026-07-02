@@ -221,7 +221,7 @@ class Parser {
         return new Stmt.Expression(expr);
     }
 
-    private Stmt.Function function(string kind){
+    private Stmt.Function function(String kind){
         Token name = consume(IDENTIFIER, "expect " + kind + " name.");
 
         consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
