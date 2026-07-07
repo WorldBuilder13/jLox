@@ -50,6 +50,15 @@ public class GenerateAst {
         String path = outputDir + "/" + baseName + ".java";
         PrintWriter writer = new PrintWriter(path, "UTF-8");
 
+        // not original to book, added to put comment at top of generate file
+        writer.println("/*");
+        writer.println("This code is copied from the book Crating Intepreter by Robert Nystrom");
+        writer.println();
+        writer.println("Changes to the base code I've made: (changes will be kept on branches of main)");
+        writer.println("+TBD");
+        writer.println("*/");
+
+        // back to original code 
         writer.println("package com.craftinginterpreters.lox;");
         writer.println();
         writer.println("import java.util.List;");
@@ -74,50 +83,50 @@ public class GenerateAst {
     }
 
     // prints visitor class interface then derived classes for each type
-    private static void defineVisitor(
-        PrintWriter writer, String baseName, List<String> types
-    ){
-        writer.println(" interface Visitor<R> {");
+    private static void defineVisitor( PrintWriter writer, String baseName, List<String> types){
+        writer.println("\tinterface Visitor<R> {");
 
         for (String type: types){
             String typeName = type.split(":")[0].trim();
-            writer.println(" R visit" + typeName + baseName + "(" + typeName + " " + baseName.toLowerCase() + ");");
+            writer.println("\t\tR visit" + typeName + baseName + "(" + typeName + " " + baseName.toLowerCase() + ");");
         }
 
-        writer.println(" }");
+        writer.println("\t}");
+        writer.println();
     }
 
     // prints prints class for each type
-    private static void defineType(
-        PrintWriter writer, String baseName, String className, String fieldList
-    ){
-        writer.println(" static class " + className + " extends " + baseName + "{");
-
-        //constructor < Book Comment
-        writer.println(" " + className + "(" + fieldList + ") {");
+    private static void defineType(PrintWriter writer, String baseName, String className, String fieldList){
+        writer.println("\tstatic class " + className + " extends " + baseName + "{");
 
         //store paremeters in fields < Book Comment
         String[] fields = fieldList.split(", ");
+
+        //fields < Book Comment
+        for (String field:fields){
+            writer.println("\t\tfinal " + field + ";");
+        }
+        writer.println();
+
+        //constructor < Book Comment
+        writer.println("\t\t" + className + "(" + fieldList + ") {");
         for (String field: fields){
             String name = field.split(" ")[1];
-            writer.println(" this." + name + " = " + name + ";");
+            writer.println("\t\t\tthis." + name + " = " + name + ";");
         }
 
-        writer.println(" }");
+        writer.println("\t\t}");
 
         //Visitor pattern < Book Comment
         writer.println();
-        writer.println(" @Override");
-        writer.println(" <R> R accept(Visitor<R> visitor){");
-        writer.println(" return visitor.visit" + className + baseName + "(this);");
-        writer.println("}");
+        writer.println("\t\t@Override");
+        writer.println("\t\t<R> R accept(Visitor<R> visitor){");
+        writer.println("\t\t\treturn visitor.visit" + className + baseName + "(this);");
+        writer.println("\t\t}");
 
-        //fields < Book Comment
+        
+
+        writer.println("\t}");
         writer.println();
-        for (String field:fields){
-            writer.println(" final " + field + ";");
-        }
-
-        writer.println("}");
     }
 }
