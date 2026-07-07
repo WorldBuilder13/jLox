@@ -77,7 +77,7 @@ public class GenerateAst {
 
         //the base accept() method. < Book Comment
         writer.println();
-        writer.println("abstract <R> R accept(Visitor<R> visitor);");
+        writer.println("\tabstract <R> R accept(Visitor<R> visitor);");
         writer.println("}");
         writer.close();
     }

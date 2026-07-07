@@ -1,6 +1,8 @@
 /*
     This code is copied from the book Crating Intepreter by Robert Nystrom
 
+    It defines enums for token types
+
     Changes to the base code I've made: (changes will be kept on branches of main)
     +TBD
 */

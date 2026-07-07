@@ -1,6 +1,8 @@
 /*
     This code is copied from the book Crating Intepreter by Robert Nystrom
 
+    It defines the base token class used for parsing and interpreting
+    
     Changes to the base code I've made: (changes will be kept on branches of main)
     +TBD
 */

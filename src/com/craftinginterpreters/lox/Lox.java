@@ -33,15 +33,16 @@ public class Lox {
         }
     }
 
+    // takes a file path, reads all bytes into array, converts array to one string, and finally calls run on string
     private static void runFile(String path) throws IOException{
-        byte[] bytes = Files.readAllBytes(Paths.get(path));
-        run(new String(bytes, Charset.defaultCharset()));
+        byte[] bytes = Files.readAllBytes(Paths.get(path));     // puts all of the binary of the file into an array by bytes
+        run(new String(bytes, Charset.defaultCharset()));       // converts bytes array to a string and passes to run()
         //Indicate an error in the exit code. < Book comment
         if(hadError) System.exit(65);
         if(hadRuntimeError) System.exit(70);
     }
 
-    //reads a line from the user (file address) and then calls run on it
+    //reads a line from the user and then calls run on it
     private static void runPrompt() throws IOException{
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
@@ -55,6 +56,7 @@ public class Lox {
         }
     }
 
+    // takes a string, scanns it for tokens, parses the tokens, and finally interprets
     private static void run(String source){
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();

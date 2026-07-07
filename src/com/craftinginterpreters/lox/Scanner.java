@@ -1,6 +1,8 @@
 /*
     This code is copied from the book Crating Intepreter by Robert Nystrom
 
+    This is used to convert raw test to Tokens.
+
     Changes to the base code I've made: (changes will be kept on branches of main)
     +TBD
 */
@@ -51,7 +53,7 @@ public class Scanner {
     //creates Tokens and adds them to tokens list
     List<Token> scanTokens(){
         while (!isAtEnd()){
-            // we are at the beginnign of the next lexeme < Book comment
+            // we are at the beginning of the next lexeme < Book comment
             start = current;
             scanToken();
         }
